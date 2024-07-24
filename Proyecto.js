@@ -19,6 +19,14 @@ let juegos = [
     },
 ];
 
+document.addEventListener("DOMContentLoaded", () => {
+    let juegosLS = localStorage.getItem("juegos");
+    if (juegosLS) {
+        juegos = JSON.parse(juegosLS);
+    }
+    main();
+});
+
 function obtenerJuego() {
     let texto = "";
     let i;
@@ -26,15 +34,9 @@ function obtenerJuego() {
         texto += "* " + juegos[i].nombre + "\n";
     }
 
-    let juegoSeleccionado = prompt(
-        texto + "* Resultados\nSelecciona una opción"
-    );
+    let juegoSeleccionado = prompt(texto + "Selecciona una opción");
 
     juegoSeleccionado = juegoSeleccionado.replaceAll(" ", "").toLowerCase();
-
-    if (juegoSeleccionado == "resultados") {
-        return "R";
-    }
 
     let juegoEncontrado = juegos.find(
         (juego) =>
@@ -75,13 +77,41 @@ function mostrarResultados() {
     main();
 }
 
+function renderizarPromedios() {
+    const listaDeJuegos = document.querySelector("#listaJuegos");
+
+    juegos = JSON.parse(localStorage.getItem("juegos"));
+
+    for (juego of juegos) {
+        /**
+         * <li>
+         *    <h3>Nombre juego</h3>
+         *    <span> 3.5, 4.3</span>
+         * </li>
+         */
+
+        const li = document.createElement("li");
+        const h3 = document.createElement("h3");
+        const span = document.createElement("span");
+
+        h3.textContent = juego.nombre;
+
+        for (promedio of juego.promedios) {
+            span.textContent += "* " + promedio + " ";
+        }
+
+        li.appendChild(h3);
+        li.appendChild(span);
+        listaDeJuegos.appendChild(li);
+    }
+}
+
+function guardarJuegos() {
+    localStorage.setItem("juegos", JSON.stringify(juegos));
+}
+
 function main() {
     let juegoSeleccionado = obtenerJuego();
-
-    if (juegoSeleccionado == "R") {
-        mostrarResultados();
-        return;
-    }
 
     const partidasIngresadas = prompt(
         "Ingrese cuantas partidas desea evaluar (min:2 / max:6)"
@@ -98,9 +128,13 @@ function main() {
 
         juegos[juegoSeleccionado].promedios.push(calculoDeKDA);
 
+        guardarJuegos();
+
         let respuesta = prompt("¿Volver al menu? (S/N)").toUpperCase();
         if (respuesta == "S") {
             main();
+        } else {
+            renderizarPromedios();
         }
     } else {
         alert(
@@ -108,4 +142,3 @@ function main() {
         );
     }
 }
-main();
